@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KAMIS 품목 조회</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 16px;
+            color: #333;
+        }
+
+        select, input[type="text"] {
+            padding: 8px;
+            font-size: 14px;
+            margin: 5px 0;
+            width: 300px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .content-container {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+
+        .result-container {
+            width: 50%;
+        }
+
+        #graph-container {
+            width: 50%;
+            padding-left: 20px;
+        }
+
+        #graph {
+            width: 100%;
+            height: auto;
+            display: none;
+        }
+
+        .additional-info {
+            display: none;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .yes-button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .yes-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <script>
+    async function searchItem() {
+        const selected_item = document.getElementById("item").value;
+        const input_item = document.getElementById("custom_item").value;
+        const item = input_item || selected_item;
+
+        const resultArea = document.getElementById("results");
+        resultArea.innerHTML = "조회 중입니다...";
+
+        const additionalInfo = document.getElementById("additional-info");
+        additionalInfo.style.display = "none";  // 조회 전에 숨김
+        document.getElementById('graph').style.display = "none"; // 조회 전 그래프 숨기기
+
+        const response = await fetch("/search", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+                "item": item
+            })
+        });
+
+        if (response.ok) {
+            const results = await response.text();
+            resultArea.innerHTML = results;
+
+            // 성공적으로 데이터를 가져왔을 때만 추가 정보 문구와 Yes 버튼을 보여줌
+            additionalInfo.style.display = "block";
+
+        } else {
+            resultArea.innerHTML = "API 요청 중 오류가 발생했습니다.";
+        }
+    }
+
+    function showGraph() {
+        // Yes 버튼을 클릭했을 때 그래프를 보여줌
+        document.getElementById('graph').style.display = "block";
+
+        // 그래프 이미지 업데이트
+        const selected_item = document.getElementById("item").value;
+        const input_item = document.getElementById("custom_item").value;
+        const item = input_item || selected_item;
+
+        const graphImg = document.getElementById('graph');
+        graphImg.src = `/graph?item=${encodeURIComponent(item)}`;  // 수정된 부분: 문자열 템플릿을 이용한 경로 설정
+    }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>KAMIS 품목 조회</h1>
+        <form>
+            <label for="item">조회할 품목명 선택:</label>
+            <select id="item" name="item">
+                {{ items_options | safe }}
+            </select>
+            <br>
+            <label for="custom_item">직접 입력할 품목명:</label>
+            <input type="text" id="custom_item" name="custom_item" placeholder="예: 수박, 복숭아">
+            <br><br>
+            <button type="button" onclick="searchItem()">조회</button>
+        </form>
+
+        <div class="content-container">
+            <div class="result-container">
+                <div id="results"></div>
+                <div id="additional-info" class="additional-info">
+                    추가적인 데이터를 확인하시겠습니까?
+                    <button class="yes-button" onclick="showGraph()">Yes</button>
+                </div>
+            </div>
+
+            <div id="graph-container">
+                <img id="graph" src="" alt="가격 변동 그래프" />
+            </div>
+        </div>
+    </div>
+</body>
+</html>
