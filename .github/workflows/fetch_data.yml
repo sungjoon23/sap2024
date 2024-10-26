@@ -28,8 +28,8 @@ jobs:
       # 새로운 데이터를 리포지토리에 커밋
       - name: Commit and push data
         run: |
-          git config --local user.email "you@example.com"
-          git config --local user.name "Your Name"
+          git config --local user.email "guaum12@naver.com"
+          git config --local user.name "sap2024"
           git add .
           git commit -m "Add daily data"
           git push
