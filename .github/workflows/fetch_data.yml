@@ -24,3 +24,14 @@ jobs:
 
       - name: Run fetch_data.py
         run: python fetch_data.py
+
+      # 새로운 데이터를 리포지토리에 커밋
+      - name: Commit and push data
+        run: |
+          git config --local user.email "you@example.com"
+          git config --local user.name "Your Name"
+          git add .
+          git commit -m "Add daily data"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
