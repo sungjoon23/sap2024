@@ -15,7 +15,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: '3.9'
 
       - name: Install dependencies
         run: |
@@ -23,7 +23,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run fetch_data.py
-        run: python fetch_data.py
+        run: python hw8/fetch_data.py
 
       # 새로운 데이터를 리포지토리에 커밋
       - name: Commit and push data
