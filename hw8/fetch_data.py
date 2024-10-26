@@ -35,7 +35,7 @@ def fetch_and_save_environment_data(station_id, year, month, day):
 
 if __name__ == "__main__":
     today = datetime.now()
-    station_id = 146  # 서울의 스테이션 ID
+    station_id = 146  
     year = today.year
     month = today.month
     day = today.day
