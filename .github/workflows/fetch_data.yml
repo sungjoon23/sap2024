@@ -1,8 +1,8 @@
-name: Fetch Daily Data
+name: Fetch Hourly Data
 
 on:
   schedule:
-    - cron: '0 * * * *'  # 매일 자정에 실행
+    - cron: '0 * * * *'  # 매시간 정각에 실행
 
 jobs:
   run-fetch-data:
@@ -25,13 +25,13 @@ jobs:
       - name: Run fetch_data.py
         run: python hw8/fetch_data.py
 
-      # 새로운 데이터를 리포지토리에 커밋
       - name: Commit and push data
         run: |
           git config --local user.email "guaum12@naver.com"
           git config --local user.name "sap2024"
-          git add .
-          git commit -m "Add daily data"
+          git diff --exit-code || git add .
+          git diff --cached --exit-code || git commit -m "Add daily data"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         
