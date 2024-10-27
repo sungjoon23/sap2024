@@ -30,7 +30,7 @@ def save_data(data, city_name):
 def main():
     site = 85  # 예시 Site ID
     dev = 1  # 예시 Device ID
-    city_name = "Seoul"  # 도시 이름 또는 관측소 이름
+    city_name = "Jeonju"  # 도시 이름 또는 관측소 이름
 
     # 오늘 날짜 기준으로 데이터를 요청
     now = datetime.now()
