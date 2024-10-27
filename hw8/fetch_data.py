@@ -3,41 +3,44 @@ import pandas as pd
 from datetime import datetime
 
 
-def fetch_and_save_environment_data(station_id, year, month, day):
-    # API URL에 년, 월, 일 파라미터 추가
-    url = (f"https://api.taegon.kr/stations/{station_id}/"
-           f"?sy={year}&sm={month}&sd={day}"
-           f"&ey={year}&em={month}&ed={day}&format=csv")
-
-    # 파일 이름 설정 (리포지토리 내에 데이터를 누적 저장할 파일)
-    file_name = "environment_data.csv"
-
-    # API로부터 데이터 가져오기
+# AWS 기상 데이터를 URL에서 받아오는 함수
+def fetch_aws_data(site, dev, year, month, day):
+    url = f"http://203.239.47.148:8080/dspnet.aspx?Site={site}&Dev={dev}&Year={year}&Mon={month}&Day={day}"
     response = requests.get(url)
 
     if response.status_code == 200:
-        # 응답 데이터를 pandas로 읽기
-        new_data = pd.read_csv(pd.compat.StringIO(response.content.decode('utf-8')))
-
-        # 기존 파일이 있으면 데이터를 덧붙이고, 없으면 새로 생성
-        try:
-            existing_data = pd.read_csv(file_name)
-            updated_data = pd.concat([existing_data, new_data])
-        except FileNotFoundError:
-            updated_data = new_data
-
-        # 데이터 저장 (덮어쓰기)
-        updated_data.to_csv(file_name, index=False)
-        print(f"Data for station {station_id} saved and updated in {file_name}.")
+        # 필요한 경우 데이터 파싱 (예시: CSV 형식으로 변환 등)
+        data = response.text
+        return data
     else:
-        print(f"Failed to fetch data for station {station_id}. Status Code: {response.status_code}")
+        return None
+
+
+# 데이터를 저장하는 함수
+def save_data(data, city_name):
+    # 파일 경로 설정
+    file_path = f"weather_data_{city_name}.csv"
+
+    # 데이터가 기존에 존재하는지 확인 후 저장
+    with open(file_path, 'a') as f:
+        f.write(data)  # 파일 끝에 데이터를 추가
+
+
+# 메인 함수
+def main():
+    site = 85  # 예시 Site ID
+    dev = 1  # 예시 Device ID
+    city_name = "Seoul"  # 도시 이름 또는 관측소 이름
+
+    # 오늘 날짜 기준으로 데이터를 요청
+    now = datetime.now()
+    data = fetch_aws_data(site, dev, now.year, now.month, now.day)
+
+    if data:
+        save_data(data, city_name)
+    else:
+        print("데이터를 가져오지 못했습니다.")
 
 
 if __name__ == "__main__":
-    today = datetime.now()
-    station_id = 146  
-    year = today.year
-    month = today.month
-    day = today.day
-
-    fetch_and_save_environment_data(station_id, year, month, day)
+    main()
