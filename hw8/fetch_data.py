@@ -45,29 +45,32 @@ def resample_data_hourly(df):
     df_hourly = df.resample('H').mean()  # 1시간 단위로 리샘플링 후 평균값 계산
     return df_hourly
 
-# 기존 데이터와 새 데이터를 병합하는 함수
-def merge_with_existing_data(new_df, city_name):
-    file_path = f"weather_data_{city_name}_hourly.csv"
+# 새로운 폴더를 만들고 데이터를 CSV로 저장하는 함수
+def save_data(df, city_name):
+    # 오늘 날짜 정보
+    now = datetime.now()
+    month_folder = now.strftime("%Y-%m")  # 예: "2024-10"
     
-    # 파일이 존재하면 기존 데이터를 불러옴
+    # 연월 형식으로 파일 이름 변경 (예: 2024.10.Jeonju.csv)
+    file_name = f"{now.strftime('%Y.%m.')}{city_name}.csv"
+
+    # 해당 월 폴더 경로 생성 (존재하지 않으면 새로 생성)
+    folder_path = os.path.join("hw8", month_folder)
+    os.makedirs(folder_path, exist_ok=True)
+
+    # 파일 경로 설정
+    file_path = os.path.join(folder_path, file_name)
+
+    # 파일이 이미 존재하면 기존 데이터를 불러오고 병합
     if os.path.exists(file_path):
         existing_df = pd.read_csv(file_path, index_col=0, parse_dates=True)
-        # 기존 데이터와 새 데이터를 병합
-        merged_df = pd.concat([existing_df, new_df])
-        # 중복된 행이 있을 경우 제거 (시간 중복 방지)
+        merged_df = pd.concat([existing_df, df])
         merged_df = merged_df[~merged_df.index.duplicated(keep='last')]
     else:
-        # 파일이 없으면 새 데이터를 그대로 사용
-        merged_df = new_df
-    
-    return merged_df
+        merged_df = df
 
-# 데이터를 CSV 파일로 저장하는 함수
-def save_data(df, city_name):
-    file_path = f"weather_data_{city_name}_hourly.csv"
-    
     # 병합된 데이터를 CSV로 저장
-    df.to_csv(file_path)
+    merged_df.to_csv(file_path)
     print(f"데이터가 {file_path} 파일에 저장되었습니다.")
 
 # 메인 함수
@@ -88,11 +91,8 @@ def main():
             # 1시간 단위로 리샘플링하고 평균 계산
             df_hourly = resample_data_hourly(df)
 
-            # 기존 데이터와 병합
-            merged_df = merge_with_existing_data(df_hourly, city_name)
-
-            # 병합된 데이터를 CSV 파일로 저장
-            save_data(merged_df, city_name)
+            # 데이터를 월별 폴더에 저장 (연월 형식으로 파일명 지정)
+            save_data(df_hourly, city_name)
             print("1시간 단위 평균 데이터를 저장하고 누적했습니다.")
         else:
             print("데이터프레임 변환에 실패했습니다.")
