@@ -2,14 +2,14 @@ name: Fetch AWS Weather Data Hourly
 
 on:
   schedule:
-    - cron: '0 * * * *'  # 1시간마다 실행
+    - cron: '0 * * * *'  # 매 시간마다 실행
 
 jobs:
   fetch-aws-data:
     runs-on: ubuntu-latest
 
     steps:
-      # 리포지토리 체크아웃 (token 명시적으로 전달)
+      # 리포지토리 체크아웃
       - name: Check out repository
         uses: actions/checkout@v3
         with:
@@ -36,7 +36,7 @@ jobs:
         run: |
           git config --local user.email "guaum12@naver.com"
           git config --local user.name "sap2024"
-          git pull --rebase origin main
+          git pull origin main
 
       # 새로운 데이터를 리포지토리에 커밋
       - name: Commit and push data
@@ -44,13 +44,19 @@ jobs:
           git config --local user.email "guaum12@naver.com"
           git config --local user.name "sap2024"
           git add .
-          git diff --cached --quiet || git commit -m "Add hourly AWS weather data"
+
+          # 데이터가 변경되었는지 확인하는 로그 추가
+          git diff --cached --quiet && echo "No changes to commit" || (
+            git commit -m "Add hourly AWS weather data" && echo "Changes committed"
+          )
+
+          # 변경 사항 푸시
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Personal Access Token (PAT)을 사용한 푸시 (Optional)
-      # GITHUB_TOKEN이 여전히 작동하지 않으면 아래 코드를 활성화
+      # GITHUB_TOKEN이 작동하지 않으면 아래 코드를 활성화
       # - name: Commit and push data using PAT
       #   run: |
       #     git config --local user.email "your_email@example.com"
