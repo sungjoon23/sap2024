@@ -9,7 +9,7 @@ def fetch_aws_data(site, dev, year, month, day):
     response = requests.get(url)
 
     if response.status_code == 200:
-        # 데이터가 CSV 형식으로 내려온다고 가정
+        # 데이터를 텍스트 형식으로 반환 (예: CSV 형식)
         data = response.text
         return data
     else:
@@ -17,11 +17,22 @@ def fetch_aws_data(site, dev, year, month, day):
 
 # 데이터를 pandas DataFrame으로 변환하는 함수
 def convert_to_dataframe(data):
-    # 데이터가 CSV 형식이라 가정하고 처리
-    df = pd.read_csv(StringIO(data), sep=",")  # 적절한 구분자 지정 필요
-    # 시간 열이 있다고 가정하고 변환 (필요한 열 이름에 맞게 수정)
-    df['time'] = pd.to_datetime(df['time'])  # 'time' 열 이름을 실제 데이터 열에 맞게 수정
-    df.set_index('time', inplace=True)
+    df = pd.read_csv(StringIO(data), sep=",")  # 데이터를 읽어옴
+
+    # 열 이름을 출력해서 확인
+    print("열 이름:", df.columns)
+
+    # 시간 열을 찾고 변환 ('time' 또는 'timestamp' 등)
+    if 'time' in df.columns:
+        df['time'] = pd.to_datetime(df['time'])
+        df.set_index('time', inplace=True)
+    elif 'timestamp' in df.columns:
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        df.set_index('timestamp', inplace=True)
+    else:
+        print("시간 관련 열이 없습니다. 열 이름을 확인하세요.")
+        return None
+    
     return df
 
 # 1시간 단위로 리샘플링하고 평균값을 계산하는 함수
@@ -29,11 +40,10 @@ def resample_data_hourly(df):
     df_hourly = df.resample('H').mean()  # 1시간 단위로 리샘플링 후 평균값 계산
     return df_hourly
 
-# 데이터를 CSV 파일로 저장하는 함수 (덮어쓰기)
+# 데이터를 CSV 파일로 저장하는 함수
 def save_data(df, city_name):
-    # 파일 경로 설정
     file_path = f"weather_data_{city_name}_hourly.csv"
-    df.to_csv(file_path, mode='a', header=not pd.io.common.file_exists(file_path))  # 데이터 추가 저장
+    df.to_csv(file_path, mode='a', header=not pd.io.common.file_exists(file_path))  # 파일에 데이터 추가 저장
 
 # 메인 함수
 def main():
@@ -49,14 +59,20 @@ def main():
         # 데이터를 DataFrame으로 변환
         df = convert_to_dataframe(data)
 
-        # 1시간 단위로 리샘플링하고 평균 계산
-        df_hourly = resample_data_hourly(df)
+        if df is not None:
+            # 1시간 단위로 리샘플링하고 평균 계산
+            df_hourly = resample_data_hourly(df)
 
-        # 데이터를 CSV 파일로 저장
-        save_data(df_hourly, city_name)
-        print("1시간 단위 평균 데이터를 저장했습니다.")
+            # 데이터를 CSV 파일로 저장
+            save_data(df_hourly, city_name)
+            print("1시간 단위 평균 데이터를 저장했습니다.")
+        else:
+            print("데이터프레임 변환에 실패했습니다.")
     else:
         print("데이터를 가져오지 못했습니다.")
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
