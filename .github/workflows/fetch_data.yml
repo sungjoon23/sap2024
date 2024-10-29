@@ -38,6 +38,11 @@ jobs:
           git config --local user.name "sap2024"
           git pull origin main
 
+      - name: Fetch AWS Data
+        run: |
+          python hw8/fetch_data.py
+          echo "Data fetched at $(date)"
+
       # 새로운 데이터를 리포지토리에 커밋
       - name: Commit and push data
         run: |
