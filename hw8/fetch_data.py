@@ -32,6 +32,9 @@ def convert_to_dataframe(data):
         print(f"Error: Failed to convert time column. {e}")
         return None
 
+    # 쉼표를 제거하는 코드 추가 (숫자 데이터 내 쉼표 제거)
+    df.replace(",", "", regex=True, inplace=True)
+
     # 열 이름 확인을 위해서 출력 (필요에 따라 제거 가능)
     print("변환된 데이터프레임:", df.head())
 
