@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from io import StringIO
 import os
 
+
 # AWS 기상 데이터를 URL에서 받아오는 함수
 def fetch_aws_data(site, dev, year, month, day):
     url = f"http://203.239.47.148:8080/dspnet.aspx?Site={site}&Dev={dev}&Year={year}&Mon={month}&Day={day}"
@@ -17,41 +18,38 @@ def fetch_aws_data(site, dev, year, month, day):
         print(f"Error: Failed to fetch data. Status code: {response.status_code}")
         return None
 
+
 # 데이터를 pandas DataFrame으로 변환하는 함수
 def convert_to_dataframe(data):
-    df = pd.read_csv(StringIO(data), sep=",")  # 데이터를 읽어옴
+    df = pd.read_csv(StringIO(data), sep=",", header=None)  # 데이터를 읽어옴 (header 없을 수 있음)
 
-    # 열 이름을 출력해서 확인
-    print("Fetched data columns:", df.columns)
-
-    # 시간 열을 찾고 변환 ('time', 'timestamp' 등의 다양한 이름을 지원)
-    time_columns = ['time', 'timestamp', 'Time', 'Timestamp']  # 시간 관련 열 이름 후보
-    time_col = None
-    for col in time_columns:
-        if col in df.columns:
-            time_col = col
-            break
-
-    if time_col:
-        df[time_col] = pd.to_datetime(df[time_col])
-        df.set_index(time_col, inplace=True)
-    else:
-        print("Error: Time column not found in the data. Check the column names.")
+    # 첫 번째 열이 시간 데이터이므로 그 열을 시간으로 변환
+    time_col = 0  # 첫 번째 열이 시간 열
+    try:
+        df[time_col] = pd.to_datetime(df[time_col])  # 첫 번째 열을 시간 형식으로 변환
+        df.set_index(time_col, inplace=True)  # 시간 열을 인덱스로 설정
+    except Exception as e:
+        print(f"Error: Failed to convert time column. {e}")
         return None
-    
+
+    # 열 이름 확인을 위해서 출력 (필요에 따라 제거 가능)
+    print("변환된 데이터프레임:", df.head())
+
     return df
+
 
 # 1시간 단위로 리샘플링하고 평균값을 계산하는 함수
 def resample_data_hourly(df):
-    df_hourly = df.resample('H').mean()  # 1시간 단위로 리샘플링 후 평균값 계산
+    df_hourly = df.resample('h').mean()  # 1시간 단위로 리샘플링 후 평균값 계산
     return df_hourly
+
 
 # 새로운 폴더를 만들고 데이터를 CSV로 저장하는 함수
 def save_data(df, city_name):
     # 오늘 날짜 정보
     now = datetime.now()
     month_folder = now.strftime("%Y-%m")  # 예: "2024-10"
-    
+
     # 연월 형식으로 파일 이름 변경 (예: 2024.10.Jeonju.csv)
     file_name = f"{now.strftime('%Y.%m.')}{city_name}.csv"
 
@@ -73,6 +71,7 @@ def save_data(df, city_name):
     # 병합된 데이터를 CSV로 저장
     merged_df.to_csv(file_path)
     print(f"Data has been saved to {file_path}.")
+
 
 # 메인 함수
 def main():
@@ -103,6 +102,7 @@ def main():
             print("Error: Failed to convert data to DataFrame.")
     else:
         print("Error: Failed to fetch data.")
+
 
 if __name__ == "__main__":
     main()
