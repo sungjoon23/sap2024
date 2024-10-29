@@ -41,10 +41,11 @@ def convert_to_dataframe(data):
 # 1시간 단위로 리샘플링하고 평균값을 계산하는 함수
 def resample_data_hourly(df):
     df_hourly = df.resample('h').mean()  # 1시간 단위로 리샘플링 후 평균값 계산
+    df_hourly = df_hourly.round(2)  # 소수점 2자리까지만 반올림
     return df_hourly
 
 
-# 새로운 폴더를 만들고 데이터를 CSV로 저장하는 함수
+# 새로운 폴더를 만들고 데이터를 CSV로 저장하는 함수 (세로로 데이터 누적)
 def save_data(df, city_name):
     # 오늘 날짜 정보
     now = datetime.now()
@@ -60,15 +61,16 @@ def save_data(df, city_name):
     # 파일 경로 설정
     file_path = os.path.join(folder_path, file_name)
 
-    # 파일이 이미 존재하면 기존 데이터를 불러오고 병합
+    # 파일이 이미 존재하면 기존 데이터를 불러오고 병합 (세로로 누적)
     if os.path.exists(file_path):
         existing_df = pd.read_csv(file_path, index_col=0, parse_dates=True)
         merged_df = pd.concat([existing_df, df])
-        merged_df = merged_df[~merged_df.index.duplicated(keep='last')]
+        merged_df = merged_df[~merged_df.index.duplicated(keep='last')]  # 중복된 인덱스 제거
     else:
         merged_df = df
 
     # 병합된 데이터를 CSV로 저장
+    merged_df.sort_index(inplace=True)  # 시간 순서대로 정렬
     merged_df.to_csv(file_path)
     print(f"Data has been saved to {file_path}.")
 
