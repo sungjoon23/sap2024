@@ -81,8 +81,7 @@ def main():
 
     # 어제 날짜 기준으로 데이터를 요청
     now = datetime.now()
-    yesterday = now - timedelta(days=1)
-    data = fetch_aws_data(site, dev, yesterday.year, yesterday.month, yesterday.day)
+    data = fetch_aws_data(site, dev, now.year, now.month, now.day)
 
     if data:
         # 가져온 데이터 미리보기 출력
