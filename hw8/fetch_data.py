@@ -50,7 +50,7 @@ def convert_to_dataframe(data):
 # 1시간 단위로 리샘플링하고 평균값을 계산하는 함수
 def resample_data_hourly(df):
     if df is not None and not df.empty:
-        df_hourly = df.resample('H').mean()  # 1시간 단위로 리샘플링 후 평균값 계산
+        df_hourly = df.resample('h').mean()  # 1시간 단위로 리샘플링 후 평균값 계산
         df_hourly = df_hourly.round(2)  # 소수점 2자리까지만 반올림
         return df_hourly
     else:
