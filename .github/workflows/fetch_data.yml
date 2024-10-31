@@ -60,6 +60,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+       - name: Run Streamlit App
+          env:
+            PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          run: |
+    # 실행할 Streamlit 명령어, 예를 들어 'streamlit run app.py'
+
       # Personal Access Token (PAT)을 사용한 푸시 (Optional)
       # GITHUB_TOKEN이 작동하지 않으면 아래 코드를 활성화
       # - name: Commit and push data using PAT
