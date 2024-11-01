@@ -60,10 +60,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-       - name: Run Streamlit App
-          env:
-            PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-          run: |
-           실행할 Streamlit 명령어, 예를 들어 'streamlit run app.py'
+     
 
       
