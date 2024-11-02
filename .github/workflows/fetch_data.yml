@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests pandas sendgrid
+          pip install requests pandas
 
       # Run the data fetch script
       - name: Fetch AWS Data
@@ -44,15 +44,16 @@ jobs:
           git config --local user.email "guaum12@naver.com"
           git config --local user.name "sap2024"
           git add .
+
           # Check if there are any changes to commit
           if ! git diff --cached --quiet; then
             git commit -m "Add hourly AWS weather data"
             git push
           else
             echo "No changes to commit"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
 
      
