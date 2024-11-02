@@ -36,15 +36,16 @@ def load_data(file_url):
     data = pd.read_csv(StringIO(response.text))
     return data
 
-# 누적광 계산 함수
-def calculate_cumulative_irradiance(df):
-    if 'IRRAD' in df.columns:
-        # 일사량을 누적하여 계산
-        df['Cumulative_Irradiance'] = df['IRRAD'].cumsum()
+# 누적 온도(GDD) 계산 함수
+def calculate_cumulative_gdd(df, base_temp=10):
+    if 'TEMP' in df.columns:
+        # 기준 온도를 사용하여 GDD를 계산하고 누적합을 구합니다.
+        df['GDD'] = df['TEMP'].apply(lambda temp: max(temp - base_temp, 0))
+        df['Cumulative_GDD'] = df['GDD'].cumsum()
     else:
-        st.error("데이터에 'IRRAD' 열이 없습니다. 누적광을 계산할 수 없습니다.")
+        st.error("데이터에 'TEMP' 열이 없습니다. 누적 온도(GDD)를 계산할 수 없습니다.")
     return df
-
+    
 # 선택한 모든 월의 데이터를 결합
 all_data = []
 for month in selected_months:
@@ -66,8 +67,8 @@ if all_data:
     df.set_index('Timestamp', inplace=True)
     df.sort_index(inplace=True)  # 날짜 순서대로 정렬
 
-    # 누적광 값 계산 및 추가
-    df = calculate_cumulative_irradiance(df)
+    # 누적온도 값 계산 및 추가
+    df = calculate_cumulative_gdd(df)
 
     # 데이터 출력 (테이블 형태로)
     st.write("CSV 파일에서 가져온 결합된 데이터:")
@@ -112,17 +113,21 @@ if all_data:
     # Streamlit에서 그래프 표시
     st.pyplot(fig)
 
-    st.write("누적광(Cumulative Irradiance) 그래프:")
+    # 누적 온도(GDD) 그래프 표시
+    st.write("누적 온도(Cumulative GDD) 그래프:")
 
     fig_cumulative, ax_cumulative = plt.subplots()
-    ax_cumulative.plot(df.index.strftime('%Y-%m-%d'), df['Cumulative_Irradiance'], color='purple', label='Cumulative Irradiance')
+    # 날짜 포맷을 YYYY-MM-DD로 지정하여 x축에 표시
+    ax_cumulative.plot(df.index.strftime('%Y-%m-%d'), df['Cumulative_GDD'], color='purple', label='Cumulative GDD')
     ax_cumulative.set_xlabel('Date')
-    ax_cumulative.set_ylabel('Cumulative Irradiance', color='purple')
+    ax_cumulative.set_ylabel('Cumulative GDD', color='purple')
     ax_cumulative.tick_params(axis='y', labelcolor='purple')
 
-    # 누적광 그래프 제목 설정
+    # 누적 온도 그래프 제목 설정
     fig_cumulative.tight_layout()
     ax_cumulative.legend(loc='upper left')
 
-    # Streamlit에서 누적광 그래프 표시
+    # Streamlit에서 누적 온도 그래프 표시
     st.pyplot(fig_cumulative)
+else:
+    st.error("선택된 달에 대한 데이터가 없습니다.")
