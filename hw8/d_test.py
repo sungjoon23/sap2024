@@ -112,12 +112,11 @@ if all_data:
     # Streamlit에서 그래프 표시
     st.pyplot(fig)
 
-    # 누적광 그래프 표시
     st.write("누적광(Cumulative Irradiance) 그래프:")
 
     fig_cumulative, ax_cumulative = plt.subplots()
-    ax_cumulative.plot(df.index, df['Cumulative_Irradiance'], color='purple', label='Cumulative Irradiance')
-    ax_cumulative.set_xlabel('Timestamp')
+    ax_cumulative.plot(df.index.strftime('%Y-%m-%d'), df['Cumulative_Irradiance'], color='purple', label='Cumulative Irradiance')
+    ax_cumulative.set_xlabel('Date')
     ax_cumulative.set_ylabel('Cumulative Irradiance', color='purple')
     ax_cumulative.tick_params(axis='y', labelcolor='purple')
 
@@ -127,5 +126,3 @@ if all_data:
 
     # Streamlit에서 누적광 그래프 표시
     st.pyplot(fig_cumulative)
-else:
-    st.error("선택된 달에 대한 데이터가 없습니다.")
