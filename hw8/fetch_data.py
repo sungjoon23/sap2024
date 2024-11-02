@@ -76,9 +76,10 @@ def save_data(df, city_name):
     now = datetime.now()
     month_folder = now.strftime("%Y-%m")
     file_name = f"{now.strftime('%Y.%m.')}{city_name}.csv"
-    folder_path = os.path.join("data", month_folder)
+    folder_path = os.path.join(os.getcwd(), "hw8", month_folder)
     os.makedirs(folder_path, exist_ok=True)
     file_path = os.path.join(folder_path, file_name)
+
 
     if os.path.exists(file_path):
         existing_df = pd.read_csv(file_path, index_col=0, parse_dates=True)
