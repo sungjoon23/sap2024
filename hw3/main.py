@@ -9,9 +9,7 @@ import io
 
 app = FastAPI()
 
-KAMIS_API_URL = "http://www.kamis.or.kr/service/price/xml.do"
-API_KEY = "53824154-ba14-4a94-b2b2-d7b3cb7585b3"
-API_ID = "guaum0817@gmail.com"
+#API 키
 
 templates = Jinja2Templates(directory="templates")
 
