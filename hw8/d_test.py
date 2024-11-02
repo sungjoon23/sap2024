@@ -67,14 +67,18 @@ if all_data:
         ('TEMP', 'HUMI', 'IRRAD', 'WIND', 'RAIN')
     )
 
-    # 사용자에게 보여줄 두 번째 데이터 선택
-    option2 = st.selectbox(
-        'Select second data to plot (오른쪽 Y축):',
-        ('TEMP', 'HUMI', 'IRRAD', 'WIND', 'RAIN')
-    )
+    # 사용자에게 두 번째 y축 표시 여부 선택
+    show_secondary_axis = st.checkbox("두 번째 Y축 표시", value=True)
 
-    # 선택된 데이터에 따른 그래프 그리기 (두 개의 y축)
-    st.write(f"{option1} 데이터 및 {option2} 데이터에 대한 그래프:")
+    # 두 번째 y축의 데이터를 선택할 수 있게 하되, 표시 여부에 따라 플롯 설정
+    if show_secondary_axis:
+        option2 = st.selectbox(
+            'Select second data to plot (오른쪽 Y축):',
+            ('TEMP', 'HUMI', 'IRRAD', 'WIND', 'RAIN')
+        )
+
+    # 선택된 데이터에 따른 그래프 그리기
+    st.write(f"{option1} 데이터 및 {option2 if show_secondary_axis else ''} 데이터에 대한 그래프:")
 
     fig, ax1 = plt.subplots()
 
@@ -84,18 +88,21 @@ if all_data:
     ax1.set_ylabel(option1, color='r')
     ax1.tick_params(axis='y', labelcolor='k')
 
-    # 두 번째 y축 생성 (오른쪽 y축)
-    ax2 = ax1.twinx()
-    ax2.plot(df.index, df[option2], marker='o', linestyle='-', color='b')
-    ax2.set_ylabel(option2, color='b')
-    ax2.tick_params(axis='y', labelcolor='k')
+    # 두 번째 y축 생성 및 표시 여부 결정
+    if show_secondary_axis:
+        ax2 = ax1.twinx()
+        ax2.plot(df.index, df[option2], marker='o', linestyle='-', color='b')
+        ax2.set_ylabel(option2, color='b')
+        ax2.tick_params(axis='y', labelcolor='k')
 
     ax1.tick_params(axis='x', labelbottom=False)
 
-    # 그래프 제목과 범례 설정
+    # 그래프 제목과 레이아웃 설정
     fig.tight_layout()
     ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
+    if show_secondary_axis:
+        ax2.legend(loc='upper right')
 
     # Streamlit에서 그래프 표시
     st.pyplot(fig)
+
