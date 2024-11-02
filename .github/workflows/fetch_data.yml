@@ -2,61 +2,56 @@ name: Fetch AWS Weather Data Hourly
 
 on:
   schedule:
-    - cron: '0 * * * *'  # 매 시간마다 실행
+    - cron: '0 * * * *'  # Run every hour
 
 jobs:
   fetch-aws-data:
     runs-on: ubuntu-latest
 
     steps:
-      # 리포지토리 체크아웃
+      # Checkout repository
       - name: Check out repository
         uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Python 설정
+      # Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      # 필요 라이브러리 설치
+      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests pandas
 
-      # 데이터 가져오는 스크립트 실행
+      # Run the data fetch script
       - name: Fetch AWS Data
-        run: python hw8/fetch_data.py
+        run: |
+          python hw8/fetch_data.py
+          echo "Data fetched at $(date)"
 
-      # 리포지토리의 최신 상태 가져오기 (충돌 방지)
+      # Pull latest changes to avoid conflicts
       - name: Pull latest changes
         run: |
           git config --local user.email "guaum12@naver.com"
           git config --local user.name "sap2024"
           git pull origin main
 
-      - name: Fetch AWS Data
-        run: |
-          python hw8/fetch_data.py
-          echo "Data fetched at $(date)"
-
-      # 새로운 데이터를 리포지토리에 커밋
+      # Commit and push new data if there are changes
       - name: Commit and push data
         run: |
           git config --local user.email "guaum12@naver.com"
           git config --local user.name "sap2024"
           git add .
 
-          # 데이터가 변경되었는지 확인하는 로그 추가
-          git diff --cached --quiet && echo "No changes to commit" || (
-            git commit -m "Add hourly AWS weather data" && echo "Changes committed"
-          )
-
-          # 변경 사항 푸시
-          git push
+          # Check if there are any changes to commit
+          if ! git diff --cached --quiet; then
+            git commit -m "Add hourly AWS weather data"
+            git push
+          else
+            echo "No changes to commit"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
