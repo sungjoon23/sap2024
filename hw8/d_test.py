@@ -15,7 +15,7 @@ current_month = datetime.now().month
 # 사용 가능한 연도와 월을 생성하는 함수
 def generate_year_month_options(start_year=2024):
     years = [str(year) for year in range(start_year, current_year + 1)]
-    months = [f"{month:02d}" for month in range(1, 13)]
+    months = [f"{month:02d}" for month in range(1, 13) if current_year > start_year or month <= current_month]
     return years, months
 
 years, months = generate_year_month_options()
@@ -35,15 +35,6 @@ def load_data(file_url):
     response.raise_for_status()  # 요청이 성공했는지 확인
     data = pd.read_csv(StringIO(response.text))
     return data
-
-# 누적광 계산 함수
-def calculate_cumulative_irradiance(df):
-    if 'IRRAD' in df.columns:
-        # 일사량을 누적하여 계산
-        df['Cumulative_Irradiance'] = df['IRRAD'].cumsum()
-    else:
-        st.error("데이터에 'IRRAD' 열이 없습니다. 누적광을 계산할 수 없습니다.")
-    return df
 
 # 선택한 모든 월의 데이터를 결합
 all_data = []
@@ -66,23 +57,20 @@ if all_data:
     df.set_index('Timestamp', inplace=True)
     df.sort_index(inplace=True)  # 날짜 순서대로 정렬
 
-    # 누적광 값 계산 및 추가
-    df = calculate_cumulative_irradiance(df)
-
     # 데이터 출력 (테이블 형태로)
     st.write("CSV 파일에서 가져온 결합된 데이터:")
     st.dataframe(df)
 
     # 사용자에게 보여줄 첫 번째 데이터 선택
     option1 = st.selectbox(
-        '첫 번째 데이터 선택 (왼쪽 Y축):',
-        ('TEMP', 'HUMI', 'IRRAD', 'WIND', 'RAIN', 'Cumulative_Irradiance')
+        'Select first data to plot:',
+        ('TEMP', 'HUMI', 'IRRAD', 'WIND', 'RAIN',)
     )
 
     # 사용자에게 보여줄 두 번째 데이터 선택
     option2 = st.selectbox(
-        '두 번째 데이터 선택 (오른쪽 Y축):',
-        ('TEMP', 'HUMI', 'IRRAD', 'WIND', 'RAIN', 'Cumulative_Irradiance')
+        'Select second data to plot (for secondary axis):',
+        ('TEMP', 'HUMI', 'IRRAD', 'WIND', 'RAIN',)
     )
 
     # 선택된 데이터에 따른 그래프 그리기 (두 개의 y축)
@@ -91,21 +79,19 @@ if all_data:
     fig, ax1 = plt.subplots()
 
     # 첫 번째 y축에 대한 데이터 플로팅 (왼쪽 y축)
-    ax1.plot(df.index, df[option1], color='r', label=option1)
+    ax1.plot(df.index, df[option1], marker='o', linestyle='-', color='r')
+    ax1.set_xlabel('Timestamp')
     ax1.set_ylabel(option1, color='r')
-    ax1.tick_params(axis='y', labelcolor='r')
+    ax1.tick_params(axis='y', labelcolor='k')
+    
+    # x축 값 제거
+    ax1.tick_params(axis='x', labelbottom=False)
 
     # 두 번째 y축 생성 (오른쪽 y축)
     ax2 = ax1.twinx()
-    ax2.plot(df.index, df[option2], color='b', label=option2)
+    ax2.plot(df.index, df[option2], marker='o', linestyle='-', color='b')
     ax2.set_ylabel(option2, color='b')
-    ax2.tick_params(axis='y', labelcolor='b')
-
-    # 그래프 제목과 범례 설정
-    plt.title(f"{option1} 및 {option2} 변화 그래프")
-    fig.tight_layout()
-    ax1.legend(loc='upper left')
-    ax2.legend(loc='upper right')
+    ax2.tick_params(axis='y', labelcolor='k')
 
     # Streamlit에서 그래프 표시
     st.pyplot(fig)
