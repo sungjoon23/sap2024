@@ -24,13 +24,8 @@ years, months = generate_year_month_options()
 selected_year = st.selectbox("연도를 선택하세요:", years)
 selected_months = st.multiselect("월을 선택하세요 (여러 달 선택 가능):", months, default=["10", "11"])
 
-# 11월 1일 데이터를 추가로 포함할지 선택
-include_november_1 = st.checkbox("11월 1일 데이터를 포함하기")
-
 # GitHub 파일 URL을 생성하는 함수
-def get_file_url(year, month, day=None):
-    if day:
-        return f"https://raw.githubusercontent.com/sungjoon23/sap2024/main/hw8/{year}-{month}/{year}.{month}.{day}.Jeonju.csv"
+def get_file_url(year, month):
     return f"https://raw.githubusercontent.com/sungjoon23/sap2024/main/hw8/{year}-{month}/{year}.{month}.Jeonju.csv"
 
 # CSV 파일을 URL에서 직접 가져와 데이터프레임으로 로드
@@ -55,20 +50,6 @@ for month in selected_months:
         st.error(f"{month}월 CSV 파일이 비어있습니다.")
     except Exception as e:
         st.error(f"{month}월 데이터를 불러오는 중 오류가 발생했습니다: {e}")
-
-# 추가적으로 11월 1일 데이터를 포함하는 경우
-if include_november_1:
-    try:
-        url_nov_1 = get_file_url(selected_year, "11", "01")  # 11월 1일 파일 URL
-        df_nov_1 = load_data(url_nov_1)
-        df_nov_1['Timestamp'] = pd.to_datetime(df_nov_1['Timestamp'])  # 날짜 형식 변환
-        all_data.append(df_nov_1)
-    except requests.exceptions.RequestException:
-        st.error("11월 1일 데이터를 불러오는 중 오류가 발생했습니다.")
-    except pd.errors.EmptyDataError:
-        st.error("11월 1일 CSV 파일이 비어있습니다.")
-    except Exception as e:
-        st.error(f"11월 1일 데이터를 불러오는 중 오류가 발생했습니다: {e}")
 
 # 모든 데이터를 하나의 데이터프레임으로 결합
 if all_data:
