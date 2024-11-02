@@ -44,7 +44,6 @@ jobs:
           git config --local user.email "guaum12@naver.com"
           git config --local user.name "sap2024"
           git add .
-
           # Check if there are any changes to commit
           if ! git diff --cached --quiet; then
             git commit -m "Add hourly AWS weather data"
