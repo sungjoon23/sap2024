@@ -5,7 +5,8 @@ from io import StringIO  # 여기에서 StringIO를 가져옵니다.
 from matplotlib import pyplot as plt
 
 # CSV 파일의 GitHub RAW URL
-url = "https://raw.githubusercontent.com/sungjoon23/sap2024/refs/heads/main/hw8/2024-11/2024.11.Jeonju.csv"
+url = "https://raw.githubusercontent.com/sungjoon23/sap2024/main/hw8/2024-11/2024.11.Jeonju.csv"
+
 
 # Streamlit 앱 제목
 st.title("환경 데이터 그래프")
