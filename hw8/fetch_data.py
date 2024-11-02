@@ -3,18 +3,21 @@ import pandas as pd
 from datetime import datetime
 from io import StringIO
 import os
+from time import sleep
 
 def fetch_aws_data(site, dev, year, month, day):
     url = f"http://203.239.47.148:8080/dspnet.aspx?Site={site}&Dev={dev}&Year={year}&Mon={month:02d}&Day={day:02d}"
-    for attempt in range(3):  # 최대 3회 재시도
+    print(f"Fetching data from URL: {url}")
+    for attempt in range(5):  # 최대 5회 재시도
         try:
             response = requests.get(url)
             response.raise_for_status()
 
             data = response.text.strip()
             if data == "NoFile" or not data:
-                print("Error: No data available on the server for the specified date.")
-                return None
+                print(f"Error: No data available for {year}-{month}-{day}. Attempt: {attempt + 1}")
+                sleep(30)  # 데이터가 없을 때 30초 대기 후 재시도
+                continue
 
             print("Fetched data preview:", data[:200])  # Print first 200 characters for preview
             return data
@@ -22,7 +25,6 @@ def fetch_aws_data(site, dev, year, month, day):
             print(f"Error fetching data (Attempt {attempt + 1}): {e}. Retrying in 30 seconds...")
             sleep(30)  # 30초 후 재시도
     return None  # 모든 시도 실패 시 None 반환
-
 
 # Function to convert data to DataFrame
 def convert_to_dataframe(data):
@@ -56,7 +58,6 @@ def convert_to_dataframe(data):
         print(f"Error during conversion: {e}")
         return None
 
-
 # Function to resample data hourly and calculate mean
 def resample_data_hourly(df):
     if df is not None and not df.empty:
@@ -66,7 +67,6 @@ def resample_data_hourly(df):
     else:
         print("Error: Cannot resample an empty DataFrame.")
         return None
-
 
 # Function to save data to CSV
 def save_data(df, city_name):
@@ -81,7 +81,6 @@ def save_data(df, city_name):
     os.makedirs(folder_path, exist_ok=True)
     file_path = os.path.join(folder_path, file_name)
 
-    # Check if file exists and append data if so
     if os.path.exists(file_path):
         existing_df = pd.read_csv(file_path, index_col=0, parse_dates=True)
         merged_df = pd.concat([existing_df, df]).drop_duplicates(keep='last').sort_index()
@@ -91,7 +90,6 @@ def save_data(df, city_name):
     merged_df.to_csv(file_path)
     print(f"Data has been saved to {file_path}.")
 
-
 # Main function to orchestrate data fetching, processing, and saving
 def main():
     site = 85
@@ -99,7 +97,10 @@ def main():
     city_name = "Jeonju"
 
     now = datetime.now()
-    data = fetch_aws_data(site, dev, now.year, now.month, now.day)
+    year, month, day = now.year, now.month, now.day
+    print(f"Attempting to fetch data for: {year}-{month:02d}-{day:02d}")
+
+    data = fetch_aws_data(site, dev, year, month, day)
 
     if data:
         df = convert_to_dataframe(data)
@@ -115,6 +116,6 @@ def main():
     else:
         print("Error: Failed to fetch data.")
 
-
 if __name__ == "__main__":
     main()
+
