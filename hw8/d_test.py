@@ -1,11 +1,11 @@
 import requests
 import pandas as pd
 import streamlit as st
-from io import StringIO
+from io import StringIO  # 여기에서 StringIO를 가져옵니다.
 from matplotlib import pyplot as plt
 
 # CSV 파일의 GitHub RAW URL
-url = "https://raw.githubusercontent.com/sungjoon23/sap2024/refs/heads/main/hw8/2024-11/2024.11.Jeonju.csv"
+url = "https://raw.githubusercontent.com/sungjoon23/sap2024/main/hw8/2024-10/2024.10.Jeonju.csv"
 
 # Streamlit 앱 제목
 st.title("환경 데이터 그래프")
@@ -15,7 +15,7 @@ st.title("환경 데이터 그래프")
 def load_data():
     response = requests.get(url)
     response.raise_for_status()  # 요청이 성공했는지 확인
-    data = pd.read_csv(pd.compat.StringIO(response.text))
+    data = pd.read_csv(StringIO(response.text))  # StringIO를 사용하여 텍스트를 읽습니다.
     return data
 
 # 데이터 로드
@@ -60,3 +60,4 @@ ax2.tick_params(axis='y', labelcolor='k')
 
 # Streamlit에서 그래프 표시
 st.pyplot(fig)
+
