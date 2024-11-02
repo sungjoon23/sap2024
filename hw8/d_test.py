@@ -105,7 +105,6 @@ if all_data:
     ax1.tick_params(axis='x', labelbottom=False)
 
     # 그래프 제목과 범례 설정
-    plt.title(f"{option1} 및 {option2} 변화 그래프")
     fig.tight_layout()
     ax1.legend(loc='upper left')
     ax2.legend(loc='upper right')
@@ -123,7 +122,6 @@ if all_data:
     ax_cumulative.tick_params(axis='y', labelcolor='purple')
 
     # 누적광 그래프 제목 설정
-    plt.title("누적광(Cumulative Irradiance) 변화 그래프")
     fig_cumulative.tight_layout()
     ax_cumulative.legend(loc='upper left')
 
