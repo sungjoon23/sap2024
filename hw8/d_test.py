@@ -29,27 +29,26 @@ def get_file_url(year, month):
     return f"https://raw.githubusercontent.com/sungjoon23/sap2024/main/hw8/{year}-{month}/{year}.{month}.Jeonju.csv"
 
 # CSV 파일을 URL에서 직접 가져와 데이터프레임으로 로드
-@st.cache_data
+@st.cache_data(ttl=600)  # 캐시 유효 시간을 10분으로 설정
 def load_data(file_url):
-    response = requests.get(file_url)
-    response.raise_for_status()  # 요청이 성공했는지 확인
-    data = pd.read_csv(StringIO(response.text))
-    return data
-    
+    try:
+        response = requests.get(file_url)
+        response.raise_for_status()  # 요청이 성공했는지 확인
+        data = pd.read_csv(StringIO(response.text))
+        return data
+    except requests.exceptions.RequestException:
+        return None
+
 # 선택한 모든 월의 데이터를 결합
 all_data = []
 for month in selected_months:
-    try:
-        url = get_file_url(selected_year, month)
-        df = load_data(url)
+    url = get_file_url(selected_year, month)
+    df = load_data(url)
+    if df is not None:
         df['Timestamp'] = pd.to_datetime(df['Timestamp'])  # 날짜 형식 변환
         all_data.append(df)
-    except requests.exceptions.RequestException:
-        st.error(f"{month}월 데이터를 불러오는 중 오류가 발생했습니다.")
-    except pd.errors.EmptyDataError:
-        st.error(f"{month}월 CSV 파일이 비어있습니다.")
-    except Exception as e:
-        st.error(f"{month}월 데이터를 불러오는 중 오류가 발생했습니다: {e}")
+    else:
+        st.warning(f"{month}월 데이터 파일이 존재하지 않거나 로드할 수 없습니다.")
 
 # 모든 데이터를 하나의 데이터프레임으로 결합
 if all_data:
@@ -83,19 +82,20 @@ if all_data:
     fig, ax1 = plt.subplots()
 
     # 첫 번째 y축에 대한 데이터 플로팅 (왼쪽 y축)
-    ax1.plot(df.index, df[option1], marker='o', linestyle='-', color='r')
+    ax1.plot(df.index, df[option1], marker='o', linestyle='-', color='r', label=option1)
     ax1.set_xlabel('Timestamp')
     ax1.set_ylabel(option1, color='r')
-    ax1.tick_params(axis='y', labelcolor='k')
+    ax1.tick_params(axis='y', labelcolor='r')
 
     # 두 번째 y축 생성 및 표시 여부 결정
     if show_secondary_axis:
         ax2 = ax1.twinx()
-        ax2.plot(df.index, df[option2], marker='o', linestyle='-', color='b')
+        ax2.plot(df.index, df[option2], marker='o', linestyle='-', color='b', label=option2)
         ax2.set_ylabel(option2, color='b')
-        ax2.tick_params(axis='y', labelcolor='k')
+        ax2.tick_params(axis='y', labelcolor='b')
 
-    ax1.tick_params(axis='x', labelbottom=False)
+    # x축 레이블을 표시합니다.
+    ax1.tick_params(axis='x', rotation=45)
 
     # 그래프 제목과 레이아웃 설정
     fig.tight_layout()
@@ -105,3 +105,6 @@ if all_data:
 
     # Streamlit에서 그래프 표시
     st.pyplot(fig)
+else:
+    st.warning("선택한 월에 대한 데이터가 없습니다.")
+
