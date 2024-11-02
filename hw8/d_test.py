@@ -79,6 +79,9 @@ try:
     ax2.set_ylabel(option2, color='b')
     ax2.tick_params(axis='y', labelcolor='k')
 
+    ax1.tick_params(axis='x', labelbottom=False)
+    ax2.tick_params(axis='x', labelbottom=False)
+
     # Streamlit에서 그래프 표시
     st.pyplot(fig)
 
