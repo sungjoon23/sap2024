@@ -91,15 +91,18 @@ if all_data:
     fig, ax1 = plt.subplots()
 
     # 첫 번째 y축에 대한 데이터 플로팅 (왼쪽 y축)
-    ax1.plot(df.index, df[option1], color='r', label=option1)
+    ax1.plot(df.index, df[option1], marker='o', linestyle='-', color='r')
+    ax1.set_xlabel('Timestamp')
     ax1.set_ylabel(option1, color='r')
-    ax1.tick_params(axis='y', labelcolor='r')
+    ax1.tick_params(axis='y', labelcolor='k')
 
     # 두 번째 y축 생성 (오른쪽 y축)
     ax2 = ax1.twinx()
-    ax2.plot(df.index, df[option2], color='b', label=option2)
+    ax2.plot(df.index, df[option2], marker='o', linestyle='-', color='b')
     ax2.set_ylabel(option2, color='b')
-    ax2.tick_params(axis='y', labelcolor='b')
+    ax2.tick_params(axis='y', labelcolor='k')
+
+    ax1.tick_params(axis='x', labelbottom=False)
 
     # 그래프 제목과 범례 설정
     plt.title(f"{option1} 및 {option2} 변화 그래프")
