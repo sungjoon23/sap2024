@@ -74,7 +74,7 @@ def save_data(df, city_name):
         print("Error: No data to save.")
         return
 
-    now = datetime.now()
+    now = datetime.utnow()
     month_folder = now.strftime("%Y-%m")
     file_name = f"{now.strftime('%Y.%m.')}{city_name}.csv"
     folder_path = os.path.join(os.getcwd(), "hw8", month_folder)
