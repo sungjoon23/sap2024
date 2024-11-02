@@ -59,7 +59,7 @@ def convert_to_dataframe(data):
 # Function to resample data hourly and calculate mean
 def resample_data_hourly(df):
     if df is not None and not df.empty:
-        df_hourly = df.resample('H').mean()
+        df_hourly = df.resample('h').mean()
         df_hourly = df_hourly.round(2)
         return df_hourly
     else:
@@ -80,7 +80,7 @@ def save_data(df, city_name):
     os.makedirs(folder_path, exist_ok=True)
     file_path = os.path.join(folder_path, file_name)
 
-
+    # Check if file exists and append data if so
     if os.path.exists(file_path):
         existing_df = pd.read_csv(file_path, index_col=0, parse_dates=True)
         merged_df = pd.concat([existing_df, df]).drop_duplicates(keep='last').sort_index()
