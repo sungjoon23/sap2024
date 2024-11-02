@@ -22,7 +22,6 @@ def fetch_aws_data(site, dev, year, month, day):
         print(f"Error fetching data: {e}")
         return None
 
-
 # Function to convert data to DataFrame
 def convert_to_dataframe(data):
     try:
@@ -55,17 +54,15 @@ def convert_to_dataframe(data):
         print(f"Error during conversion: {e}")
         return None
 
-
 # Function to resample data hourly and calculate mean
 def resample_data_hourly(df):
     if df is not None and not df.empty:
-        df_hourly = df.resample('h').mean()
+        df_hourly = df.resample('H').mean()
         df_hourly = df_hourly.round(2)
         return df_hourly
     else:
         print("Error: Cannot resample an empty DataFrame.")
         return None
-
 
 # Function to save data to CSV
 def save_data(df, city_name):
@@ -76,7 +73,7 @@ def save_data(df, city_name):
     now = datetime.now()
     month_folder = now.strftime("%Y-%m")
     file_name = f"{now.strftime('%Y.%m.')}{city_name}.csv"
-    folder_path = os.path.join(os.getcwd(), "hw8", month_folder)
+    folder_path = os.path.join("hw8", month_folder)
     os.makedirs(folder_path, exist_ok=True)
     file_path = os.path.join(folder_path, file_name)
 
@@ -111,7 +108,6 @@ def main():
             print("Error: Failed to convert data to DataFrame.")
     else:
         print("Error: Failed to fetch data.")
-
 
 if __name__ == "__main__":
     main()
