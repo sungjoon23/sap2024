@@ -30,7 +30,7 @@ def convert_to_dataframe(data):
 
         # Define expected columns
         expected_columns = {0: 'Timestamp', 1: 'TEMP', 2: 'HUMI', 6: 'IRRAD', 7: 'WIND_DIR',
-                            13: 'WIND', 14: 'RAIN', 15: 'WIND_MAX', 16: 'VOLTAGE'
+                            13: 'WIND', 14: 'RAIN', 15: 'WIND_MAX', 16: 'VOLTAGE'}
 
         if len(df.columns) < max(expected_columns.keys()) + 1:
             print("Error: Fetched data does not match expected format.")
