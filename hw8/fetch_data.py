@@ -29,8 +29,8 @@ def convert_to_dataframe(data):
         df = pd.read_csv(StringIO(data), sep=",", header=None)
 
         # Define expected columns
-        expected_columns = {0: 'Timestamp', 2: 'TEMP', 3: 'HUMI', 7: 'IRRAD', 8: 'WIND_DIR',
-                            14: 'WIND', 15: 'RAIN', 16: 'WIND_MAX', 17: 'VOLTAGE'}
+        expected_columns = {0: 'Timestamp', 1: 'TEMP', 2: 'HUMI', 6: 'IRRAD', 7: 'WIND_DIR',
+                            13: 'WIND', 14: 'RAIN', 15: 'WIND_MAX', 16: 'VOLTAGE'
 
         if len(df.columns) < max(expected_columns.keys()) + 1:
             print("Error: Fetched data does not match expected format.")
