@@ -29,13 +29,13 @@ def get_file_url(year, month):
     return f"https://raw.githubusercontent.com/sungjoon23/sap2024/main/hw8/{year}-{month}/{year}.{month}.Jeonju.csv"
 
 # CSV 파일을 URL에서 직접 가져와 데이터프레임으로 로드
-@st.cache_data
+@st.experimental_memo
 def load_data(file_url):
     response = requests.get(file_url)
     response.raise_for_status()  # 요청이 성공했는지 확인
     data = pd.read_csv(StringIO(response.text))
     return data
-    
+
 # 선택한 모든 월의 데이터를 결합
 all_data = []
 for month in selected_months:
@@ -71,6 +71,7 @@ if all_data:
     show_secondary_axis = st.checkbox("두 번째 Y축 표시", value=True)
 
     # 두 번째 y축의 데이터를 선택할 수 있게 하되, 표시 여부에 따라 플롯 설정
+    option2 = None
     if show_secondary_axis:
         option2 = st.selectbox(
             'Select second data to plot (오른쪽 Y축):',
@@ -78,31 +79,34 @@ if all_data:
         )
 
     # 선택된 데이터에 따른 그래프 그리기
-    st.write(f"{option1} 데이터 및 {option2 if show_secondary_axis else ''} 데이터에 대한 그래프:")
+    st.write(f"{option1} 데이터 {f'및 {option2} 데이터' if show_secondary_axis else ''}에 대한 그래프:")
 
     fig, ax1 = plt.subplots()
 
     # 첫 번째 y축에 대한 데이터 플로팅 (왼쪽 y축)
-    ax1.plot(df.index, df[option1], marker='o', linestyle='-', color='r')
+    ax1.plot(df.index, df[option1], marker='o', linestyle='-', color='r', label=option1)
     ax1.set_xlabel('Timestamp')
     ax1.set_ylabel(option1, color='r')
     ax1.tick_params(axis='y', labelcolor='k')
 
     # 두 번째 y축 생성 및 표시 여부 결정
-    if show_secondary_axis:
+    if show_secondary_axis and option2:
         ax2 = ax1.twinx()
-        ax2.plot(df.index, df[option2], marker='o', linestyle='-', color='b')
+        ax2.plot(df.index, df[option2], marker='o', linestyle='-', color='b', label=option2)
         ax2.set_ylabel(option2, color='b')
         ax2.tick_params(axis='y', labelcolor='k')
 
-    ax1.tick_params(axis='x', labelbottom=False)
+    # x축 라벨 형식을 변경하여 날짜만 표시 (예: YYYY-MM-DD)
+    ax1.xaxis.set_major_formatter(plt.matplotlib.dates.DateFormatter('%Y-%m-%d'))
+    fig.autofmt_xdate()  # x축 날짜 레이블 회전
 
     # 그래프 제목과 레이아웃 설정
     fig.tight_layout()
     ax1.legend(loc='upper left')
-    if show_secondary_axis:
+    if show_secondary_axis and option2:
         ax2.legend(loc='upper right')
 
     # Streamlit에서 그래프 표시
     st.pyplot(fig)
-
+else:
+    st.error("선택된 달에 대한 데이터가 없습니다.")
