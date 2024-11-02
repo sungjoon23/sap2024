@@ -3,28 +3,25 @@ import pandas as pd
 from datetime import datetime
 from io import StringIO
 import os
-from time import sleep
 
+# Function to fetch AWS weather data from the URL
 def fetch_aws_data(site, dev, year, month, day):
     url = f"http://203.239.47.148:8080/dspnet.aspx?Site={site}&Dev={dev}&Year={year}&Mon={month:02d}&Day={day:02d}"
-    print(f"Fetching data from URL: {url}")
-    for attempt in range(5):  # 최대 5회 재시도
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
 
-            data = response.text.strip()
-            if data == "NoFile" or not data:
-                print(f"Error: No data available for {year}-{month}-{day}. Attempt: {attempt + 1}")
-                sleep(30)  # 데이터가 없을 때 30초 대기 후 재시도
-                continue
+        data = response.text.strip()
+        if data == "NoFile" or not data:
+            print("Error: No data available on the server for the specified date.")
+            return None
 
-            print("Fetched data preview:", data[:200])  # Print first 200 characters for preview
-            return data
-        except requests.exceptions.RequestException as e:
-            print(f"Error fetching data (Attempt {attempt + 1}): {e}. Retrying in 30 seconds...")
-            sleep(30)  # 30초 후 재시도
-    return None  # 모든 시도 실패 시 None 반환
+        print("Fetched data preview:", data[:200])  # Print first 200 characters for preview
+        return data
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data: {e}")
+        return None
+
 
 # Function to convert data to DataFrame
 def convert_to_dataframe(data):
@@ -58,6 +55,7 @@ def convert_to_dataframe(data):
         print(f"Error during conversion: {e}")
         return None
 
+
 # Function to resample data hourly and calculate mean
 def resample_data_hourly(df):
     if df is not None and not df.empty:
@@ -68,13 +66,14 @@ def resample_data_hourly(df):
         print("Error: Cannot resample an empty DataFrame.")
         return None
 
+
 # Function to save data to CSV
 def save_data(df, city_name):
     if df is None or df.empty:
         print("Error: No data to save.")
         return
 
-    now = datetime.utnow()
+    now = datetime.now()
     month_folder = now.strftime("%Y-%m")
     file_name = f"{now.strftime('%Y.%m.')}{city_name}.csv"
     folder_path = os.path.join(os.getcwd(), "hw8", month_folder)
@@ -97,10 +96,7 @@ def main():
     city_name = "Jeonju"
 
     now = datetime.now()
-    year, month, day = now.year, now.month, now.day
-    print(f"Attempting to fetch data for: {year}-{month:02d}-{day:02d}")
-
-    data = fetch_aws_data(site, dev, year, month, day)
+    data = fetch_aws_data(site, dev, now.year, now.month, now.day)
 
     if data:
         df = convert_to_dataframe(data)
@@ -116,6 +112,6 @@ def main():
     else:
         print("Error: Failed to fetch data.")
 
+
 if __name__ == "__main__":
     main()
-
