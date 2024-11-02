@@ -35,16 +35,6 @@ def load_data(file_url):
     response.raise_for_status()  # 요청이 성공했는지 확인
     data = pd.read_csv(StringIO(response.text))
     return data
-
-# 누적 온도(GDD) 계산 함수
-def calculate_cumulative_gdd(df, base_temp=10):
-    if 'TEMP' in df.columns:
-        # 기준 온도를 사용하여 GDD를 계산하고 누적합을 구합니다.
-        df['GDD'] = df['TEMP'].apply(lambda temp: max(temp - base_temp, 0))
-        df['Cumulative_GDD'] = df['GDD'].cumsum()
-    else:
-        st.error("데이터에 'TEMP' 열이 없습니다. 누적 온도(GDD)를 계산할 수 없습니다.")
-    return df
     
 # 선택한 모든 월의 데이터를 결합
 all_data = []
@@ -66,9 +56,6 @@ if all_data:
     df = pd.concat(all_data)
     df.set_index('Timestamp', inplace=True)
     df.sort_index(inplace=True)  # 날짜 순서대로 정렬
-
-    # 누적온도 값 계산 및 추가
-    df = calculate_cumulative_gdd(df)
 
     # 데이터 출력 (테이블 형태로)
     st.write("CSV 파일에서 가져온 결합된 데이터:")
@@ -112,22 +99,3 @@ if all_data:
 
     # Streamlit에서 그래프 표시
     st.pyplot(fig)
-
-    # 누적 온도(GDD) 그래프 표시
-    st.write("누적 온도(Cumulative GDD) 그래프:")
-
-    fig_cumulative, ax_cumulative = plt.subplots()
-    # 날짜 포맷을 YYYY-MM-DD로 지정하여 x축에 표시
-    ax_cumulative.plot(df.index.strftime('%Y-%m-%d'), df['Cumulative_GDD'], color='purple', label='Cumulative GDD')
-    ax_cumulative.set_xlabel('Date')
-    ax_cumulative.set_ylabel('Cumulative GDD', color='purple')
-    ax_cumulative.tick_params(axis='y', labelcolor='purple')
-
-    # 누적 온도 그래프 제목 설정
-    fig_cumulative.tight_layout()
-    ax_cumulative.legend(loc='upper left')
-
-    # Streamlit에서 누적 온도 그래프 표시
-    st.pyplot(fig_cumulative)
-else:
-    st.error("선택된 달에 대한 데이터가 없습니다.")
