@@ -22,14 +22,11 @@ years, months = generate_year_month_options()
 
 # 사용자에게 연도와 월을 선택하도록 옵션 제공
 selected_year = st.selectbox("연도를 선택하세요:", years)
-selected_month = st.selectbox("월을 선택하세요:", months)
+selected_months = st.multiselect("월을 선택하세요 (여러 달 선택 가능):", months, default=["10", "11"])
 
 # GitHub 파일 URL을 생성하는 함수
 def get_file_url(year, month):
     return f"https://raw.githubusercontent.com/sungjoon23/sap2024/main/hw8/{year}-{month}/{year}.{month}.Jeonju.csv"
-
-# CSV 파일 URL
-url = get_file_url(selected_year, selected_month)
 
 # CSV 파일을 URL에서 직접 가져와 데이터프레임으로 로드
 @st.cache_data
@@ -39,11 +36,29 @@ def load_data(file_url):
     data = pd.read_csv(StringIO(response.text))
     return data
 
-# 데이터 로드
-try:
-    df = load_data(url)
+# 선택한 모든 월의 데이터를 결합
+all_data = []
+for month in selected_months:
+    try:
+        url = get_file_url(selected_year, month)
+        df = load_data(url)
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'])  # 날짜 형식 변환
+        all_data.append(df)
+    except requests.exceptions.RequestException:
+        st.error(f"{month}월 데이터를 불러오는 중 오류가 발생했습니다.")
+    except pd.errors.EmptyDataError:
+        st.error(f"{month}월 CSV 파일이 비어있습니다.")
+    except Exception as e:
+        st.error(f"{month}월 데이터를 불러오는 중 오류가 발생했습니다: {e}")
+
+# 모든 데이터를 하나의 데이터프레임으로 결합
+if all_data:
+    df = pd.concat(all_data)
+    df.set_index('Timestamp', inplace=True)
+    df.sort_index(inplace=True)  # 날짜 순서대로 정렬
+
     # 데이터 출력 (테이블 형태로)
-    st.write("CSV 파일에서 가져온 데이터:")
+    st.write("CSV 파일에서 가져온 결합된 데이터:")
     st.dataframe(df)
 
     # 사용자에게 보여줄 첫 번째 데이터 선택
@@ -58,10 +73,6 @@ try:
         ('TEMP', 'HUMI', 'IRRAD', 'WIND', 'RAIN',)
     )
 
-    # 시간(Timestamp)을 인덱스로 설정
-    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
-    df.set_index('Timestamp', inplace=True)
-
     # 선택된 데이터에 따른 그래프 그리기 (두 개의 y축)
     st.write(f"{option1} 데이터 및 {option2} 데이터에 대한 그래프:")
 
@@ -72,6 +83,9 @@ try:
     ax1.set_xlabel('Timestamp')
     ax1.set_ylabel(option1, color='r')
     ax1.tick_params(axis='y', labelcolor='k')
+    
+    # x축 값 제거
+    ax1.tick_params(axis='x', labelbottom=False)
 
     # 두 번째 y축 생성 (오른쪽 y축)
     ax2 = ax1.twinx()
@@ -79,15 +93,7 @@ try:
     ax2.set_ylabel(option2, color='b')
     ax2.tick_params(axis='y', labelcolor='k')
 
-    ax1.tick_params(axis='x', labelbottom=False)
-    ax2.tick_params(axis='x', labelbottom=False)
-
     # Streamlit에서 그래프 표시
     st.pyplot(fig)
-
-except requests.exceptions.RequestException:
-    st.error("데이터를 불러오는 중 오류가 발생했습니다. URL을 확인해 주세요.")
-except pd.errors.EmptyDataError:
-    st.error("CSV 파일이 비어있습니다. 다른 파일을 선택해 주세요.")
-except Exception as e:
-    st.error(f"오류가 발생했습니다: {e}")
+else:
+    st.error("선택된 달에 대한 데이터가 없습니다.")
