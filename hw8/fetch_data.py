@@ -4,23 +4,24 @@ from datetime import datetime
 from io import StringIO
 import os
 
-# Function to fetch AWS weather data from the URL
 def fetch_aws_data(site, dev, year, month, day):
     url = f"http://203.239.47.148:8080/dspnet.aspx?Site={site}&Dev={dev}&Year={year}&Mon={month:02d}&Day={day:02d}"
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
+    for attempt in range(3):  # 최대 3회 재시도
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
 
-        data = response.text.strip()
-        if data == "NoFile" or not data:
-            print("Error: No data available on the server for the specified date.")
-            return None
+            data = response.text.strip()
+            if data == "NoFile" or not data:
+                print("Error: No data available on the server for the specified date.")
+                return None
 
-        print("Fetched data preview:", data[:200])  # Print first 200 characters for preview
-        return data
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching data: {e}")
-        return None
+            print("Fetched data preview:", data[:200])  # Print first 200 characters for preview
+            return data
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching data (Attempt {attempt + 1}): {e}. Retrying in 30 seconds...")
+            sleep(30)  # 30초 후 재시도
+    return None  # 모든 시도 실패 시 None 반환
 
 
 # Function to convert data to DataFrame
