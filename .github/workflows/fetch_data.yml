@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests pandas
+          pip install requests pandas sendgrid
 
       # Run the data fetch script
       - name: Fetch AWS Data
@@ -51,9 +51,15 @@ jobs:
             git push
           else
             echo "No changes to commit"
-          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Send email alert
+      - name: Send Email Alert
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+        run: |
+          python hw8/send_email_alert.py
 
      
 
