@@ -2,61 +2,55 @@ name: Fetch AWS Weather Data Hourly
 
 on:
   schedule:
-    - cron: '0 * * * *'  # 매 시간마다 실행
+    - cron: '0 * * * *'  # Run every hour
 
 jobs:
   fetch-aws-data:
     runs-on: ubuntu-latest
 
     steps:
-      # 리포지토리 체크아웃
+      # Checkout repository
       - name: Check out repository
         uses: actions/checkout@v3
 
-      # Python 설정
+      # Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      # 의존성 설치
+      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests pandas
 
-      # 데이터 가져오기 스크립트 실행
+      # Run the data fetch script
       - name: Fetch AWS Data
         run: |
           python hw8/fetch_data.py
           echo "Data fetched at $(date)"
 
-      # 최신 변경 사항 풀링
+      # Pull latest changes to avoid conflicts
       - name: Pull latest changes
         run: |
           git config --local user.email "guaum12@naver.com"
           git config --local user.name "sap2024"
-          git pull origin main --rebase
+          git pull origin main
 
-      # 파일 변경 사항 확인 및 디버깅용 로그 출력
-      - name: Check for changes and debug
-        run: |
-          git status
-          git diff
-
-      # 새로운 데이터가 있을 경우 커밋 및 푸시
+      # Commit and push new data if there are changes
       - name: Commit and push data
         run: |
           git config --local user.email "guaum12@naver.com"
           git config --local user.name "sap2024"
-          git add hw8/
+          git add .
 
-          # 변경 사항이 있는지 확인 후 커밋 및 푸시
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
+          # Check if there are any changes to commit
+          if ! git diff --cached --quiet; then
             git commit -m "Add hourly AWS weather data"
-            git push origin main
+            git push
+          else
+            echo "No changes to commit"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
