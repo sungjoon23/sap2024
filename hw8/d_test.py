@@ -2,8 +2,8 @@ import requests
 import pandas as pd
 import streamlit as st
 from io import StringIO
-from matplotlib import pyplot as plt
 from datetime import datetime
+import plotly.graph_objects as go
 
 # Streamlit 앱 제목
 st.title("환경 데이터 그래프")
@@ -79,32 +79,54 @@ if all_data:
     # 선택된 데이터에 따른 그래프 그리기
     st.write(f"{option1} 데이터 및 {option2 if show_secondary_axis else ''} 데이터에 대한 그래프:")
 
-    fig, ax1 = plt.subplots()
+    # Plotly를 사용하여 인터랙티브한 그래프 생성
+    fig = go.Figure()
 
     # 첫 번째 y축에 대한 데이터 플로팅 (왼쪽 y축)
-    ax1.plot(df.index, df[option1], linestyle='-', color='r', label=option1)
-    ax1.set_xlabel('Timestamp')
-    ax1.set_ylabel(option1, color='r')
-    ax1.tick_params(axis='y', labelcolor='k')
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df[option1], 
+            mode='lines', 
+            name=option1,
+            yaxis="y1",
+            line=dict(color="red")
+        )
+    )
 
     # 두 번째 y축 생성 및 표시 여부 결정
     if show_secondary_axis:
-        ax2 = ax1.twinx()
-        ax2.plot(df.index, df[option2], linestyle='-', color='b', label=option2)
-        ax2.set_ylabel(option2, color='b')
-        ax2.tick_params(axis='y', labelcolor='k')
+        fig.add_trace(
+            go.Scatter(
+                x=df.index, 
+                y=df[option2], 
+                mode='lines', 
+                name=option2,
+                yaxis="y2",
+                line=dict(color="blue")
+            )
+        )
 
-    # x축 레이블을 표시합니다.
-    ax1.tick_params(axis='x', rotation=45)
-
-    # 그래프 제목과 레이아웃 설정
-    fig.tight_layout()
-    ax1.legend(loc='upper left')
-    if show_secondary_axis:
-        ax2.legend(loc='upper right')
+    # 레이아웃 설정 (왼쪽 및 오른쪽 y축)
+    fig.update_layout(
+        xaxis_title="Timestamp",
+        yaxis=dict(
+            title=option1,
+            titlefont=dict(color="red"),
+            tickfont=dict(color="red"),
+        ),
+        yaxis2=dict(
+            title=option2 if show_secondary_axis else "",
+            titlefont=dict(color="blue"),
+            tickfont=dict(color="blue"),
+            overlaying="y",
+            side="right"
+        ),
+        legend=dict(x=0, y=1),
+    )
 
     # Streamlit에서 그래프 표시
-    st.pyplot(fig)
+    st.plotly_chart(fig)
 else:
     st.warning("선택한 월에 대한 데이터가 없습니다.")
 
