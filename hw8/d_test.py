@@ -82,7 +82,7 @@ if all_data:
     fig, ax1 = plt.subplots()
 
     # 첫 번째 y축에 대한 데이터 플로팅 (왼쪽 y축)
-    ax1.plot(df.index, df[option1], marker='o', linestyle='-', color='r', label=option1)
+    ax1.plot(df.index, df[option1], linestyle='-', color='r', label=option1)
     ax1.set_xlabel('Timestamp')
     ax1.set_ylabel(option1, color='r')
     ax1.tick_params(axis='y', labelcolor='k')
@@ -90,7 +90,7 @@ if all_data:
     # 두 번째 y축 생성 및 표시 여부 결정
     if show_secondary_axis:
         ax2 = ax1.twinx()
-        ax2.plot(df.index, df[option2], marker='o', linestyle='-', color='b', label=option2)
+        ax2.plot(df.index, df[option2], linestyle='-', color='b', label=option2)
         ax2.set_ylabel(option2, color='b')
         ax2.tick_params(axis='y', labelcolor='k')
 
